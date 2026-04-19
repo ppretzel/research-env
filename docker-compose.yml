@@ -5,10 +5,9 @@ services:
     volumes:
       - ${FS_LICENSE}:/usr/local/freesurfer/license.txt:ro
       - ${BIDS_DIR}:/bids:ro
-      - ${FREESURFER_OUTPUT}:/output
-      - ${SCRIPTS_DIR}:/scripts
+      - ${RESEARCH_DIR}:/research
     environment:
-      - SUBJECTS_DIR=/output
+      - SUBJECTS_DIR=/research/advanvedVolumetry/freesurfer_derived_subject_data/
     stdin_open: true
     tty: true
     profiles: ["freesurfer"]
@@ -28,9 +27,7 @@ services:
       dockerfile: Dockerfile.tools
     volumes:
       - ${BIDS_DIR}:/bids:ro
-      - ${FREESURFER_OUTPUT}:/freesurfer
-      - ${MRTRIX_OUTPUT}:/mrtrix
-      - ${SCRIPTS_DIR}:/scripts
+      - ${RESEARCH_DIR}:/research
     stdin_open: true
     tty: true
     profiles: ["tools"]
