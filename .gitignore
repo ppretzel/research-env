@@ -1,0 +1,9 @@
+.env
+*.deb
+data/
+*.nii
+*.nii.gz
+*.nii.gz
+*.dcm
+results/
+.DS_Store

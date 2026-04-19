@@ -1,0 +1,42 @@
+services:
+
+  freesurfer:
+    image: freesurfer/freesurfer:8.2.0
+    volumes:
+      - ${FS_LICENSE}:/usr/local/freesurfer/license.txt:ro
+      - ${BIDS_DIR}:/bids:ro
+      - ${FREESURFER_OUTPUT}:/output
+      - ${SCRIPTS_DIR}:/scripts
+    environment:
+      - SUBJECTS_DIR=/output
+    stdin_open: true
+    tty: true
+    profiles: ["freesurfer"]
+
+  mrtrix:
+    image: mrtrix3/mrtrix3:latest
+    volumes:
+      - ${BIDS_DIR}:/bids:ro
+      - ${FREESURFER_OUTPUT}:/freesurfer:ro
+      - ${MRTRIX_OUTPUT}:/output
+      - ${SCRIPTS_DIR}:/scripts
+    environment:
+      - BIDS=/bids
+      - FS_DIR=/freesurfer
+      - OUT=/output
+    stdin_open: true
+    tty: true
+    profiles: ["mrtrix"]
+
+  tools:
+    build:
+      context: .
+      dockerfile: Dockerfile.tools
+    volumes:
+      - ${BIDS_DIR}:/bids:ro
+      - ${FREESURFER_OUTPUT}:/freesurfer
+      - ${MRTRIX_OUTPUT}:/mrtrix
+      - ${SCRIPTS_DIR}:/scripts
+    stdin_open: true
+    tty: true
+    profiles: ["tools"]
