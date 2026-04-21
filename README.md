@@ -1,8 +1,5 @@
 # Neuroimaging Research Environment
 
-A portable, reproducible neuroimaging pipeline environment using Docker Compose. Run identical terminal environments across Linux, macOS, and Windows — mount your data at runtime, keep your scripts in version control.
-
----
 
 A very simple docker setup to unify and simplify my personal neuroimaging research environment across devices and operating systems.
 
@@ -13,7 +10,7 @@ A very simple docker setup to unify and simplify my personal neuroimaging resear
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (macOS / Windows)
 - Docker Engine (Linux)
 - Git
-- AWS CLI
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) (for accessing data through AWS s3)
 
 ## 2. Setup on a new machine
 
@@ -21,7 +18,7 @@ A very simple docker setup to unify and simplify my personal neuroimaging resear
 git clone https://github.com/yourname/research-env.git
 cd research-env
 cp .env.example .env
-vim .env # Specific for the machine
+vim .env # Set environment pecific for the machine
 
 docker compose pull          # pulls freesurfer + mrtrix official images
 docker compose build tools   # builds the small custom tools image
@@ -33,11 +30,15 @@ This only needs to be done once per machine. Subsequent `docker compose run` cal
 
 ## 3. Day-to-day usage
 
-### Run a pipeline script
+### Run non-interactively
 
 ```bash
+# From within research-env/:
 docker compose run --rm mrtrix bash /research/path/inside/docker/to/script.zsh
 docker compose run --rm freesurfer bash /research/path/inside/docker/to/script.zsh
+
+# From any other path:
+docker compose -f $DOCKER_COMPOSE_YML run --rm mrtrix <command>
 ```
 
 ### Interactive session
