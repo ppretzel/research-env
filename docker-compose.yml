@@ -3,11 +3,11 @@ services:
   freesurfer:
     image: freesurfer/freesurfer:8.2.0
     volumes:
-      - ${FS_LICENSE}:/usr/local/freesurfer/license.txt:ro
+      - ${FS_LICENSE}:/usr/local/freesurfer/8.2.0-1/license.txt:ro
       - ${BIDS_DIR}:/bids:ro
       - ${RESEARCH_DIR}:/research
     environment:
-      - SUBJECTS_DIR=/research/advanvedVolumetry/freesurfer_derived_subject_data/
+      - SUBJECTS_DIR=/research/advancedVolumetry/freesurfer_derived_subject_data/
     stdin_open: true
     tty: true
     profiles: ["freesurfer"]
