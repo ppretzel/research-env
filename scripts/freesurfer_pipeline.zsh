@@ -3,25 +3,32 @@
 # Main freesurfer pipeline
 # To be run from the pch2a/advancedVolumetry directory
 
-#bids_dir=/mnt/arbeit-ssd/original_scans/PCH2A/BIDS
-subs_dir=$PWD/freesurfer_derived_subject_data
+subs_dir=/research/advanvedVolumetry/freesurfer_derived_subject_data
+bids_dir=/bids
 
-bids_dir_docker=/root/persistent/BIDS
-subs_dir_docker=/root/persistent/advancedVolumetry/freesurfer_derived_subject_data
 
 mkdir $subs_dir -p
-export SUBJECTS_DIR=$subs_dir_docker
+export SUBJECTS_DIR=$subs_dir
 
-######### Process controls
+######### SUBJECTS ################################################################################
+
+
+########### sub-107 ############
+
+recon-all -autorecon1 -s sub-107 -i $bids_dir/sub-107/anat/sub-107_acq_isoSag1mm_T1w.nii.gz
+
+
+
+######### CONTROLS #################################################################################
 #controlslist=$(ls -d $bids_dir/sub-0* | xargs -n 1 basename)
 #
 #Temporary controlslist to update missing subjects
-controlslist="sub-001 sub-002 sub-006 sub-007 sub-030 sub-034 sub-035 sub-036 sub-038 sub-042 sub-053"
-echo Processing controls: $controlslist
+#controlslist="sub-001 sub-002 sub-006 sub-007 sub-030 sub-034 sub-035 sub-036 sub-038 sub-042 sub-053"
+#echo Processing controls: $controlslist
 
 # Autorecon 1: Skull stripping
 #parallel --progress --jobs 8 \
-#    /home/ubuntu/freesurfer/bin/recon-all -autorecon1 -s {} -i $bids_dir_docker/{}/anat/{}_acq-isoSag1mm_T1w.nii.gz \
+#    /home/ubuntu/freesurfer/bin/recon-all -autorecon1 -s {} -i $bids_dir/{}/anat/{}_acq-isoSag1mm_T1w.nii.gz \
 #    -wsthresh 30 -gcut \
 #    ::: $controlslist
 #correctionlist=(004 017 024 029 032 037 049 050)
@@ -33,9 +40,9 @@ echo Processing controls: $controlslist
 
 # Check brainmasks
 
-parallel --progress --jobs 8 \
-    recon-all -autorecon2 -subjid {} \
-    ::: $controlslist
+#parallel --progress --jobs 8 \
+#    recon-all -autorecon2 -subjid {} \
+#    ::: $controlslist
 
 # Check WM masks
 
