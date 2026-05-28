@@ -21,6 +21,15 @@ services:
     tty: true
     profiles: ["mrtrix"]
 
+  ants:
+    image: antsx/ants:latest
+    volumes:
+      - ${BIDS_DIR}:/bids:ro
+      - ${RESEARCH_DIR}:/research
+    stdin_open: true
+    tty: true
+    profiles: ["ants"]
+
   tools:
     build:
       context: .
