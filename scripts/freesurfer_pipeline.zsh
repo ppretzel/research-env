@@ -16,7 +16,8 @@ export SUBJECTS_DIR=$subs_dir
 ########### sub-107 ############
 
 recon-all -autorecon1 -s sub-107 -i $bids_dir/sub-107/anat/sub-107_acq_isoSag1mm_T1w.nii.gz
-
+# Check brainmask
+recon-all -autorecon2 -s sub-107
 
 
 ######### CONTROLS #################################################################################
