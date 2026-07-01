@@ -29,14 +29,3 @@ services:
     stdin_open: true
     tty: true
     profiles: ["ants"]
-
-  tools:
-    build:
-      context: .
-      dockerfile: Dockerfile.tools
-    volumes:
-      - ${BIDS_DIR}:/bids:ro
-      - ${RESEARCH_DIR}:/research
-    stdin_open: true
-    tty: true
-    profiles: ["tools"]

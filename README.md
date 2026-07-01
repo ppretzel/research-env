@@ -1,7 +1,6 @@
-# Neuroimaging Research Environment
+# PCH2A Research Environment
 
-
-A very simple docker setup to unify and simplify my personal neuroimaging research environment across devices and operating systems.
+A very simple docker setup to unify and simplify my research environment for the PCH2A project across devices and operating systems.
 
 ---
 
@@ -18,10 +17,9 @@ A very simple docker setup to unify and simplify my personal neuroimaging resear
 git clone https://github.com/yourname/research-env.git
 cd research-env
 cp .env.example .env
-vim .env # Set environment pecific for the machine
+vim .env # Set environment specific for the machine
 
-docker compose pull          # pulls freesurfer + mrtrix official images
-docker compose build tools   # builds the small custom tools image
+docker compose pull
 ```
 
 This only needs to be done once per machine. Subsequent `docker compose run` calls start instantly.
@@ -66,9 +64,6 @@ docker compose run --rm mrtrix bash /scripts/step3_tractography.sh
 ```bash
 # Per-container live stats (run in a separate terminal)
 docker stats
-
-# Full host resource view
-docker compose run --rm tools   # then run htop inside
 ```
 
 ---
