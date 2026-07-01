@@ -26,6 +26,37 @@ sudo docker compose run --rm freesurfer recon-all-clinical.sh \
     -sdir /research/advancedVolumetry/freesurfer_derived_subject_data/
 
 
+# ==============  Potentiell weitere relevante Snippets ===============
+exit
+
+# stats/aseg.stats berechnen, nicht automatisch durch recon-all-clinical.sh:
+mri_segstats --seg mri/aseg.mgz \
+  --sum stats/aseg.stats \
+  --pv mri/norm.mgz \
+  --empty --brainmask mri/brainmask.mgz \
+  --brain-vol-from-seg --excludeid 0 \
+  --excl-ctxgmwm --supratent --subcortgray \
+  --in mri/norm.mgz --in-intensity-name norm --in-intensity-units MR \
+  --etiv --surf-wm-vol --surf-ctx-vol --totalgray --euler \
+  --ctab /path/to/FreeSurferColorLUT.txt \
+  --subject <subject_id>
+
+
+# Thalmaus Subsegmentierung der Kerne:
+# Fuer Kontext: https://claude.ai/share/2c63572e-758d-4d51-99b9-8671e6237c38
+cd $SUBJECTS_DIR/<subject>
+# 1. Check what you actually have
+ls mri/transforms/
+ls mri/*.mgz
+# 2. If talairach.xfm is missing/wrong format, generate it from the SynthSR volume
+talairach_avi --i mri/synthSR.norm.mgz --xfm mri/transforms/talairach.xfm
+# (or use mri_easyreg / SynthMorph if you prefer the newer registration tools —
+#  either should be fine since this is just providing the atlas-space prior)
+# 3. Provide a "nu.mgz" equivalent — the tool's internal file lookups are often
+#    hardcoded, so safest is a symlink/copy
+cp mri/synthSR.norm.mgz mri/nu.mgz
+# 4. Run the segmentation
+segment_subregions thalamus --cross <subject> --sd $SUBJECTS_DIR
 
 
 
