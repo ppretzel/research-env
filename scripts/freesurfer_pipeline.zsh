@@ -1,5 +1,46 @@
 #!/bin/bash
 
+
+# Freesurfer pipeline
+# Based on the dockerized research-env structure
+#
+# First, clone the research-env and set up .env as per readme.md
+#
+# Then invoke this script from within the research-env directory:
+
+
+# Check argument
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <subject-id>" >&2
+    exit 1
+fi
+sub_id=$1
+echo Running pipeline for subject $sub_id
+
+# Run dockerized freesurfer
+source .env
+sudo docker compose run --rm freesurfer recon-all-clinical.sh \
+    -i /bids/$sub_id/anat/${sub_id}_acq-isoSag1mm_T1w.nii.gz \
+    -subjid $sub_id \
+    -threads 8 \
+    -sdir /research/advancedVolumetry/freesurfer_derived_subject_data/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#============= OLD STUFF, JUST FOR REFERENCE =====================
+exit
+
 # Main freesurfer pipeline
 # To be run from the pch2a/advancedVolumetry directory
 
