@@ -24,6 +24,8 @@ sudo docker compose run --rm freesurfer recon-all-clinical.sh \
     -subjid $sub_id \
     -threads 8 \
     -sdir /research/advancedVolumetry/freesurfer_derived_subject_data/
+# Für die subjects mit 2 runs: jeweils run-02 genommen
+# Für sub-102: MP2Rage
 
 
 # ==============  Potentiell weitere relevante Snippets ===============
