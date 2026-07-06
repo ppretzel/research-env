@@ -18,18 +18,41 @@ sub_id=$1
 echo Running pipeline for subject $sub_id
 
 # Run dockerized freesurfer
-source .env
-sudo docker compose run --rm freesurfer recon-all-clinical.sh \
-    -i /bids/$sub_id/anat/${sub_id}_acq-isoSag1mm_T1w.nii.gz \
-    -subjid $sub_id \
-    -threads 8 \
-    -sdir /research/advancedVolumetry/freesurfer_derived_subject_data/
+#source .env
+#sudo docker compose run --rm freesurfer recon-all-clinical.sh \
+#    -i /bids/$sub_id/anat/${sub_id}_acq-isoSag1mm_T1w.nii.gz \
+#    -subjid $sub_id \
+#    -threads 8 \
+#    -sdir /research/advancedVolumetry/freesurfer_derived_subject_data/
 
+# recon-all-clinical.sh does not compute stats/wmparc.stats automatically
+# (same situation as stats/aseg.stats below), so generate it here to get
+# white matter parcellation volumes for this subject.
+sudo docker compose run --rm freesurfer bash -c "
+    cd \$SUBJECTS_DIR/$sub_id &&
+    mri_segstats \
+        --seg mri/wmparc.mgz \
+        --sum stats/wmparc.stats \
+        --pv mri/norm.mgz \
+        --excludeid 0 \
+        --brain-vol-from-seg \
+        --brainmask mri/brainmask.mgz \
+        --in mri/norm.mgz --in-intensity-name norm --in-intensity-units MR \
+        --subject $sub_id \
+        --surf-wm-vol \
+        --ctab \$FREESURFER_HOME/WMParcStatsLUT.txt \
+        --etiv
+"
 
 # ==============  Potentiell weitere relevante Snippets ===============
 exit
 
-# stats/aseg.stats berechnen, nicht automatisch durch recon-all-clinical.sh:
+
+
+# recon-all-clinical.sh berechnet nicht automatisch stats/aseg.stats, was durch asegstats2table
+#   zusammengesammelt werden könnte
+# Mit dem Befehl hier kann man es selbst berechnen bei Bedarf
+# Kann aber auch, wie Stand 07/26, einfach synthseg.vol.csv im stats/ Ordner nehmen
 mri_segstats --seg mri/aseg.mgz \
   --sum stats/aseg.stats \
   --pv mri/norm.mgz \
@@ -40,7 +63,6 @@ mri_segstats --seg mri/aseg.mgz \
   --etiv --surf-wm-vol --surf-ctx-vol --totalgray --euler \
   --ctab /path/to/FreeSurferColorLUT.txt \
   --subject <subject_id>
-
 
 # Thalmaus Subsegmentierung der Kerne:
 # Fuer Kontext: https://claude.ai/share/2c63572e-758d-4d51-99b9-8671e6237c38
