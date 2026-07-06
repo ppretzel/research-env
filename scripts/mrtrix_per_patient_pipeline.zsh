@@ -16,19 +16,16 @@ if [[ -z "$subject_id" ]]; then
 fi
 
 sub=$subject_id
-
 echo Running pipeline for $sub
-
-exit
 
 
 # Set the env folders
-bids_dir=/mnt/arbeit-ssd/original_scans/PCH2A/BIDS
-templatedir=/mnt/arbeit-ssd/research/PCH2A/structuralConnectivity/template
-statsdir=/mnt/arbeit-ssd/research/PCH2A/structuralConnectivity/statistics
-freesurferdir=/mnt/arbeit-ssd/research/PCH2A/advancedVolumetry
-wdir=/mnt/arbeit-ssd/research/PCH2A/structuralConnectivity/mrtrix_derived_subject_data/$sub
-
+bids_dir=/bids
+templatedir=/research/structuralConnectivity/template
+statsdir=/research/structuralConnectivity/statistics
+mrtrixdir=/research/structuralConnectivity
+freesurferdir=/research/advancedVolumetry
+wdir=/research/structuralConnectivity/mrtrix_derived_subject_data/$sub
 
 # Create target folder and check whether it's empty, 
 # ask to overwrite if not empty
@@ -106,7 +103,7 @@ fi
 # e.g. for sub-101 it works best with 0.4
 #mrconvert $wdir/preprocessing/dwi_denoised_unringed_preproc_upsampled.mif \
 #          $wdir/preprocessing/dwi_denoised_unringed_preproc_upsampled.nii.gz
-#bet \
+#/opt/fsl/bin/bet \
 #    $wdir/preprocessing/dwi_denoised_unringed_preproc_upsampled.nii.gz \
 #    $wdir/preprocessing/brain_only.nii.gz -f 0.4
 #mrconvert \
@@ -230,7 +227,7 @@ exit
 # Extract brain from T1, extract bzero shells from DWI
 
 #    mkdir -p $wdir/t1_registration
-#    bet \
+#    /opt/fsl/bin/bet \
 #        $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
 #        $wdir/t1_registration/T1_bet.nii.gz
 #    dwiextract -bzero \
@@ -244,7 +241,7 @@ exit
 #              $wdir/t1_registration/dwi_zero_mean.nii.gz
 
 ## Register T1 into DWI using FSL epi_reg
-#    epi_reg \
+#    /opt/fsl/bin/epi_reg \
 #        --epi=$wdir/t1_registration/dwi_zero_mean.nii.gz \
 #        --t1=$bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
 #        --t1brain=$wdir/t1_registration/T1_bet.nii.gz \
@@ -352,7 +349,7 @@ function addBrainstem {
 labelconvert \
     $wdir/ACT/aparc.DKTatlas+brainstem.mif \
     $freesurferdir/FreeSurferColorLUT.txt \
-    fs_default_adapted.txt \
+    $mrtrixdir/fs_default_adapted.txt \
     $wdir/ACT/nodes.mif
 # IMPORTANT! If this step fails, check that in FreeSurferColorLUT the asterisks have been removed from Thalamus_proper!!
 
@@ -451,8 +448,8 @@ exit
 ## Use FSL to skullstrip T1 and register into DWI space
 #mrconvert t1.mif t1.nii.gz
 #mrconvert dwi_denoised_unringed_preproc_unbiased_upsampled.mif dwi_preprocessed_upsampled.nii.gz
-#bet t1.nii.gz t1_brainonly.nii.gz
-#epi_reg --epi=dwi_preprocessed_upsampled.nii.gz \
+#/opt/fsl/bin/bet t1.nii.gz t1_brainonly.nii.gz
+#/opt/fsl/bin/epi_reg --epi=dwi_preprocessed_upsampled.nii.gz \
 #    --t1=t1.nii.gz \
 #    --t1brain=t1_brainonly.nii.gz \
 #    --out=dwi2t1
