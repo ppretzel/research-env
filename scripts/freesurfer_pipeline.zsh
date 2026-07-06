@@ -18,12 +18,14 @@ sub_id=$1
 echo Running pipeline for subject $sub_id
 
 # Run dockerized freesurfer
-#source .env
-#sudo docker compose run --rm freesurfer recon-all-clinical.sh \
-#    -i /bids/$sub_id/anat/${sub_id}_acq-isoSag1mm_T1w.nii.gz \
-#    -subjid $sub_id \
-#    -threads 8 \
-#    -sdir /research/advancedVolumetry/freesurfer_derived_subject_data/
+source .env
+sudo docker compose run --rm freesurfer recon-all-clinical.sh \
+    -i /bids/$sub_id/anat/${sub_id}_acq-isoSag1mm_T1w.nii.gz \
+    -subjid $sub_id \
+    -threads 8 \
+    -sdir /research/advancedVolumetry/freesurfer_derived_subject_data/
+# Für die subjects mit 2 runs: jeweils run-02 genommen
+# Für sub-102: MP2Rage
 
 # recon-all-clinical.sh does not compute stats/wmparc.stats automatically
 # (same situation as stats/aseg.stats below), so generate it here to get
