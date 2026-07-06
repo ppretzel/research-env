@@ -13,7 +13,7 @@ services:
     profiles: ["freesurfer"]
 
   mrtrix:
-    image: mrtrix3/mrtrix3:latest
+    image: mrtrix3/mrtrix3:3.0.5
     volumes:
       - ${BIDS_DIR}:/bids:ro
       - ${RESEARCH_DIR}:/research
