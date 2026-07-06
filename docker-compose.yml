@@ -17,6 +17,7 @@ services:
     volumes:
       - ${BIDS_DIR}:/bids:ro
       - ${RESEARCH_DIR}:/research
+      - ${SCRIPTS_DIR}:/scripts
     stdin_open: true
     tty: true
     profiles: ["mrtrix"]

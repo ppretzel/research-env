@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 # To be run from the structuralConnectivity folder
 # This script processes data from a new patient, after their data
@@ -8,12 +8,19 @@
 # following the pipeline in
 # https://mrtrix.readthedocs.io/en/dev/fixel_based_analysis/mt_fibre_density_cross-section.html
 
-# Change as needed
-sub=sub-107
+subject_id=$1
 
-# activate the environment
-source /home/pablo/libraries/miniconda3/etc/profile.d/conda.sh
-conda activate pch2a
+if [[ -z "$subject_id" ]]; then
+    echo "Error: no subject_id supplied. Usage: $0 <subject_id>"
+    exit 1
+fi
+
+sub=$subject_id
+
+echo Running pipeline for $sub
+
+exit
+
 
 # Set the env folders
 bids_dir=/mnt/arbeit-ssd/original_scans/PCH2A/BIDS
