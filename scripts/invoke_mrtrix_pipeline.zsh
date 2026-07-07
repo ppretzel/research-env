@@ -11,4 +11,7 @@ if [[ -z "$subject_id" ]]; then
     exit 1
 fi
 
-sudo docker compose run --rm mrtrix bash /scripts/mrtrix_per_patient_pipeline.zsh "$subject_id"
+sudo docker compose run --rm \
+    --user 1000:1000 \
+    mrtrix \
+    bash /scripts/mrtrix_per_patient_pipeline.zsh "$subject_id"

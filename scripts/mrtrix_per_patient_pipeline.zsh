@@ -130,16 +130,16 @@ fi
 #    exit
 #fi
 
-# Register to all three compartment templates
-mrregister \
-    $wdir/wmfod_norm.mif $templatedir/wmfod_multi_template.mif \
-    $wdir/gm_norm.mif $templatedir/gm_multi_template.mif \
-    $wdir/csf_norm.mif $templatedir/csf_multi_template.mif \
-    -mask1 $wdir/preprocessing/dwi_mask_nocerebellum.mif \
-    -nl_warp $wdir/subject2template_warp.mif $wdir/template2subject_warp.mif \
-    -transformed $wdir/wmfod_norm_in_template_space.mif \
-    -transformed $wdir/gm_in_template_space.mif \
-    -transformed $wdir/csf_in_template_space.mif
+## Register to all three compartment templates
+#mrregister \
+#    $wdir/wmfod_norm.mif $templatedir/wmfod_multi_template.mif \
+#    $wdir/gm_norm.mif $templatedir/gm_multi_template.mif \
+#    $wdir/csf_norm.mif $templatedir/csf_multi_template.mif \
+#    -mask1 $wdir/preprocessing/dwi_mask_nocerebellum.mif \
+#    -nl_warp $wdir/subject2template_warp.mif $wdir/template2subject_warp.mif \
+#    -transformed $wdir/wmfod_norm_in_template_space.mif \
+#    -transformed $wdir/gm_in_template_space.mif \
+#    -transformed $wdir/csf_in_template_space.mif
 
 # Also register using the original DWI mask
 # While this increases accuracy around the brainstem and cerebral peduncles, 
@@ -156,47 +156,47 @@ mrregister \
 #    #-transformed $wdir/csf_in_template_space.mif
 
 
-# Warp FOD into template space, compute fixel and FD
-mrtransform $wdir/wmfod_norm.mif \
-    -warp $wdir/subject2template_warp.mif \
-    -reorient_fod no \
-    $wdir/fod_in_template_space_NOT_REORIENTED.mif
-fod2fixel -mask $templatedir/template_mask.mif \
-    $wdir/fod_in_template_space_NOT_REORIENTED.mif \
-    $wdir/fixel_in_template_space_NOT_REORIENTED \
-    -afd fd.mif
-fixelreorient $wdir/fixel_in_template_space_NOT_REORIENTED \
-    $wdir/subject2template_warp.mif \
-    $wdir/fixel_in_template_space
-rm -r $wdir/fixel_in_template_space_NOT_REORIENTED \
-      $wdir/fod_in_template_space_NOT_REORIENTED.mif
-
-# Move FD into templace space, compute FC and FDC
-fixelcorrespondence $wdir/fixel_in_template_space/fd.mif \
-    $templatedir/fixel_mask \
-    $templatedir/fd $sub.mif
-warp2metric $wdir/subject2template_warp.mif \
-    -fc $templatedir/fixel_mask \
-    $templatedir/fc $sub.mif
-mrcalc $templatedir/fc/$sub.mif \
-    -log $templatedir/log_fc/$sub.mif
-mrcalc $templatedir/fd/$sub.mif \
-    $templatedir/fc/$sub.mif \
-    -mult \
-    $templatedir/fdc/$sub.mif
-
-# Smoothe based on template fixel connectivity matrix
-fixelfilter $templatedir/fd/$sub.mif \
-    smooth -matrix $templatedir/matrix/ \
-    $templatedir/fd_smooth/$sub.mif
-fixelfilter $templatedir/log_fc/$sub.mif \
-    smooth -matrix $templatedir/matrix/ \
-    $templatedir/log_fc_smooth/$sub.mif
-fixelfilter $templatedir/fdc/$sub.mif \
-    smooth -matrix $templatedir/matrix/ \
-    $templatedir/fdc_smooth/$sub.mif
-
-exit
+## Warp FOD into template space, compute fixel and FD
+#mrtransform $wdir/wmfod_norm.mif \
+#    -warp $wdir/subject2template_warp.mif \
+#    -reorient_fod no \
+#    $wdir/fod_in_template_space_NOT_REORIENTED.mif
+#fod2fixel -mask $templatedir/template_mask.mif \
+#    $wdir/fod_in_template_space_NOT_REORIENTED.mif \
+#    $wdir/fixel_in_template_space_NOT_REORIENTED \
+#    -afd fd.mif
+#fixelreorient $wdir/fixel_in_template_space_NOT_REORIENTED \
+#    $wdir/subject2template_warp.mif \
+#    $wdir/fixel_in_template_space
+#rm -r $wdir/fixel_in_template_space_NOT_REORIENTED \
+#      $wdir/fod_in_template_space_NOT_REORIENTED.mif
+#
+## Move FD into templace space, compute FC and FDC
+#fixelcorrespondence $wdir/fixel_in_template_space/fd.mif \
+#    $templatedir/fixel_mask \
+#    $templatedir/fd $sub.mif
+#warp2metric $wdir/subject2template_warp.mif \
+#    -fc $templatedir/fixel_mask \
+#    $templatedir/fc $sub.mif
+#mrcalc $templatedir/fc/$sub.mif \
+#    -log $templatedir/log_fc/$sub.mif
+#mrcalc $templatedir/fd/$sub.mif \
+#    $templatedir/fc/$sub.mif \
+#    -mult \
+#    $templatedir/fdc/$sub.mif
+#
+## Smoothe based on template fixel connectivity matrix
+#fixelfilter $templatedir/fd/$sub.mif \
+#    smooth -matrix $templatedir/matrix/ \
+#    $templatedir/fd_smooth/$sub.mif
+#fixelfilter $templatedir/log_fc/$sub.mif \
+#    smooth -matrix $templatedir/matrix/ \
+#    $templatedir/log_fc_smooth/$sub.mif
+#fixelfilter $templatedir/fdc/$sub.mif \
+#    smooth -matrix $templatedir/matrix/ \
+#    $templatedir/fdc_smooth/$sub.mif
+#
+#exit
 
 ###################################################################
 # Individual analysis - zscores against controls distribution
@@ -218,7 +218,7 @@ exit
 ## Best to show it on the template background,
 #  then threshold (by the same metric!), i.e. -2 on the right input field,
 #  and then set the color scale from -2 to -6 or something like that
-exit
+#exit
 
 
 ###################################################################
@@ -262,6 +262,7 @@ exit
 #            -linear $wdir/t1_registration/dwi2t1_warp.txt \
 #            -inverse \
 #            $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz
+#exit
 
 
 ###################################################################
@@ -275,6 +276,7 @@ exit
 #############   ACT
 
 mkdir -p $wdir/ACT
+echo "Performing ACT"
 
 function addBrainstem {
 
@@ -325,25 +327,32 @@ function addBrainstem {
 
 }
 
+# Add brainstem masks to the DKT atlas for connectome creation
+# syntax: addBrainstem $wdir <height> <midline>
+# Set height so that the upper end of the mask sits below the cerebellum,
+# so that streamlines are separated between cerebellar peduncles and brainstem
+#
 # Dont remove these function calls to keep the parameters for documentation
-# addBrainstem $wdir 115 128
+#addBrainstem $wdir 97 70 #sub-101
 
 
 ## Perform ACT
-#tckgen \
-#    -angle 22.5 -maxlen 250 -minlen 10 -power 1.0 \
-#    $wdir/wmfod_norm.mif \
-#    -seed_gmwmi $wdir/preprocessing/dwi_mask_upsampled.mif \
-#    -act $wdir/ACT/5tt-DKT-brainstem.mif \
-#    -mask $wdir/preprocessing/dwi_mask_upsampled.mif \
-#    -select 2000000 -cutoff 0.10 \
-#    $wdir/ACT/tracks_2m_ACT.tck
-#tcksift2 \
-#    $wdir/ACT/tracks_2m_ACT.tck \
-#    $wdir/wmfod_norm.mif \
-#    $wdir/ACT/tracks_2m_tcksift2_weights.txt \
-#    -act $wdir/ACT/5tt-DKT-brainstem.mif \
-#    -out_mu $wdir/ACT/tracks_2m_tcksift2_mu.txt
+tckgen \
+    -angle 22.5 -maxlen 250 -minlen 10 -power 1.0 \
+    $wdir/wmfod_norm.mif \
+    -seed_gmwmi $wdir/preprocessing/dwi_mask_upsampled.mif \
+    -act $wdir/ACT/5tt-DKT-brainstem.mif \
+    -mask $wdir/preprocessing/dwi_mask_upsampled.mif \
+    -select 2000000 -cutoff 0.10 \
+    $wdir/ACT/tracks_2m_ACT.tck
+tcksift2 \
+    $wdir/ACT/tracks_2m_ACT.tck \
+    $wdir/wmfod_norm.mif \
+    $wdir/ACT/tracks_2m_tcksift2_weights.txt \
+    -act $wdir/ACT/5tt-DKT-brainstem.mif \
+    -out_mu $wdir/ACT/tracks_2m_tcksift2_mu.txt
+
+exit
 
 # Connectome 
 labelconvert \
