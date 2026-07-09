@@ -335,6 +335,8 @@ function addBrainstem {
 # Dont remove these function calls to keep the parameters for documentation
 #addBrainstem $wdir 97 70 #sub-101
 
+exit
+
 
 ## Perform ACT
 tckgen \
