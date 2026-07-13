@@ -23,7 +23,7 @@ echo Running pipeline for $sub
 bids_dir=/bids
 templatedir=/research/structuralConnectivity/template
 statsdir=/research/structuralConnectivity/statistics
-mrtrixdir=/research/structuralConnectivity
+mrtrixdir=/research/structuralConnectivity/mrtrix_derived_subject_data
 freesurferdir=/research/advancedVolumetry
 wdir=/research/structuralConnectivity/mrtrix_derived_subject_data/$sub
 
@@ -198,31 +198,8 @@ fi
 #
 #exit
 
-###################################################################
-# Individual analysis - zscores against controls distribution
 
-#individualAnalysisFolder=$statsdir/individualAnalysis
-#mrcalc $templatedir/fd_smooth/$sub.mif \
-#    $individualAnalysisFolder/fd_smooth_controls_mean.mif -subtract \
-#    $individualAnalysisFolder/fd_smooth_controls_std.mif -divide \
-#    $individualAnalysisFolder/${sub}_fd_zscore.mif
-#mrcalc $templatedir/log_fc_smooth/$sub.mif \
-#    $individualAnalysisFolder/log_fc_smooth_controls_mean.mif -subtract \
-#    $individualAnalysisFolder/log_fc_smooth_controls_std.mif -divide \
-#    $individualAnalysisFolder/${sub}_log_fc_zscore.mif
-#mrcalc $templatedir/fdc_smooth/$sub.mif \
-#    $individualAnalysisFolder/fdc_smooth_controls_mean.mif -subtract \
-#    $individualAnalysisFolder/fdc_smooth_controls_std.mif -divide \
-#    $individualAnalysisFolder/${sub}_fdc_zscore.mif
-
-## Best to show it on the template background,
-#  then threshold (by the same metric!), i.e. -2 on the right input field,
-#  and then set the color scale from -2 to -6 or something like that
-#exit
-
-
-###################################################################
-#### ACT Anatomically Constrained Tracography
+####### Register T1 and freesurfer output into subject and template space ######
 
 # Extract brain from T1, extract bzero shells from DWI
 
@@ -240,10 +217,10 @@ fi
 #    mrconvert $wdir/t1_registration/dwi_zero_mean.mif \
 #              $wdir/t1_registration/dwi_zero_mean.nii.gz
 
-## Register T1 into DWI using FSL epi_reg
+# Register T1 into DWI using FSL epi_reg
 #    /opt/fsl/bin/epi_reg \
 #        --epi=$wdir/t1_registration/dwi_zero_mean.nii.gz \
-#        --t1=$bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
+#        --t1=$bids_dir/$sub/anat/${sub}_acq-UNI_MP2RAGE.nii.gz \
 #        --t1brain=$wdir/t1_registration/T1_bet.nii.gz \
 #        --out=$wdir/t1_registration/dwi2t1
 
@@ -272,8 +249,100 @@ fi
 #            $wdir/t1_registration/T1_in_template_space.mif
 #            
 
+###################################################################
+# Individual analysis - zscores against controls distribution
+
+individualAnalysisFolder=$statsdir/individualAnalysis
+#mrcalc $templatedir/fd_smooth/$sub.mif \
+#    $individualAnalysisFolder/fd_smooth_controls_mean.mif -subtract \
+#    $individualAnalysisFolder/fd_smooth_controls_std.mif -divide \
+#    $individualAnalysisFolder/${sub}_fd_zscore.mif
+#mrcalc $templatedir/log_fc_smooth/$sub.mif \
+#    $individualAnalysisFolder/log_fc_smooth_controls_mean.mif -subtract \
+#    $individualAnalysisFolder/log_fc_smooth_controls_std.mif -divide \
+#    $individualAnalysisFolder/${sub}_log_fc_zscore.mif
+#mrcalc $templatedir/fdc_smooth/$sub.mif \
+#    $individualAnalysisFolder/fdc_smooth_controls_mean.mif -subtract \
+#    $individualAnalysisFolder/fdc_smooth_controls_std.mif -divide \
+#    $individualAnalysisFolder/${sub}_fdc_zscore.mif
+
+## Write dump text files of all fixel zscores within the lobes for plotting
+## Self written lookup file
+lut_file=$freesurferdir/WMParcByLobeLUT.txt
+#mrtransform $freesurferdir/freesurfer_derived_subject_data/$sub/mri/wmparc.mgz \
+#    -linear $wdir/t1_registration/dwi2t1_warp.txt \
+#    -inverse -interp nearest \
+#    $wdir/t1_registration/wmparc_in_dwi_space.mif
+
+dumpfolder=$individualAnalysisFolder/${sub}_zscore_dump/
+mkdir -p $dumpfolder
+
+## regrid wmparc_in_dwi_space in fixel grid
+#fixel2voxel $individualAnalysisFolder/${sub}_fd_zscore.mif \
+#  mean - | \
+#mrgrid $wdir/t1_registration/wmparc_in_dwi_space.mif \
+#  regrid -template - \
+#  -interp nearest \
+#  $dumpfolder/wmparc_in_fixel_space.mif
+#
+#while IFS=';' read -r id name hemi lobe _rest; do
+#  # skip empty lines and comments
+#  [[ -z "$id" ]] && continue
+#  [[ "$id" =~ ^[[:space:]]*# ]] && continue
+#
+#  # trim whitespace
+#  id="${id#"${id%%[![:space:]]*}"}"
+#  hemi="${hemi#"${hemi%%[![:space:]]*}"}"
+#  lobe="${lobe#"${lobe%%[![:space:]]*}"}"
+#
+#  # if it doesnt exist, create fixel mask for the lobe and hemi
+#  if [[ ! -e $dumpfolder/tmp-$sub-$hemi-$lobe-mask.mif ]]; then
+#      mrcalc $dumpfolder/wmparc_in_fixel_space.mif \
+#          0 -mult \
+#          - | \
+#      voxel2fixel \
+#          - \
+#          $individualAnalysisFolder/ \
+#          $dumpfolder/ \
+#          tmp-$sub-$hemi-$lobe-mask.mif
+#      echo "created fixel mask for $hemi $lobe"
+#  fi
+#
+#  mrcalc $dumpfolder/wmparc_in_fixel_space.mif \
+#      $id \
+#      -eq \
+#      - | \
+#  voxel2fixel \
+#      - \
+#      $individualAnalysisFolder/ \
+#      $dumpfolder/ \
+#      tmp-$sub-$hemi-$lobe-${id}_mask.mif
+#  mrmath \
+#      $dumpfolder/tmp-$sub-$hemi-$lobe-mask.mif \
+#      $dumpfolder/tmp-$sub-$hemi-$lobe-${id}-mask.mif \
+#      max \
+#      $dumpfolder/tmp-$sub-$hemi-$lobe-mask.mif \
+#      -force
+
+
+#  mrdump $individualAnalysisFolder/${sub}_fd_zscore.mif \
+#      -mask $dumpfolder/tmp-$sub-$hemi-$lobe-mask.mif >> \
+#      $dumpfolder/${sub}_fd_zscore_${hemi}_${lobe}_dump.txt
+#  rm $dumpfolder/tmp-$sub-$hemi-$lobe-mask.mif
+
+#done < "$lut_file"
+
+exit
+
+
+## Best to show it on the template background,
+#  then threshold (by the same metric!), i.e. -2 on the right input field,
+#  and then set the color scale from -2 to -6 or something like that
+#exit
+
+
 ###########################################################################
-#############   ACT
+#############   ACT Anatomically constrained Tractography
 
 mkdir -p $wdir/ACT
 echo "Performing ACT"
@@ -327,6 +396,7 @@ function addBrainstem {
 
 }
 
+
 # Add brainstem masks to the DKT atlas for connectome creation
 # syntax: addBrainstem $wdir <height> <midline>
 # Set height so that the upper end of the mask sits below the cerebellum,
@@ -334,6 +404,9 @@ function addBrainstem {
 #
 # Dont remove these function calls to keep the parameters for documentation
 #addBrainstem $wdir 97 70 #sub-101
+addBrainstem $wdir 97 70 #sub-102
+
+exit
 
 
 ## Perform ACT
@@ -413,113 +486,3 @@ linkTract $cerebellum_l $cerebellum_r pons sub-001
 
 
 exit
-
-####################################################################3
-#  Archive of old stuff, not used any more
-
-
-
-# Extra: Whole-brain tractography in both subject and template space
-#tckgen \
-#    -angle 22.5 \
-#    -maxlen 250 -minlen 10 \
-#    -power 1.0 \
-#    wmfod_norm.mif \
-#    -seed_image dwi_mask_upsampled.mif \
-#    -mask dwi_mask_upsampled.mif \
-#    -select 2000000 \
-#    -cutoff 0.06 \
-#    tracks_2_million_subject_space.tck
-#tcksift tracks_2_million_subject_space.tck \
-#    wmfod_norm.mif \
-#    -term_number 200000 \
-#    tracks_200k_subject_space.tck
-
-#mrtransform dwi_mask_upsampled.mif \
-#    -warp subject2template_warp.mif \
-#    dwi_mask_upsampled_in_template_space.mif
-#tckgen \
-#    -angle 22.5 \
-#    -maxlen 250 -minlen 10 \
-#    -power 1.0 \
-#    wmfod_norm_in_template_space.mif \
-#    -seed_image dwi_mask_upsampled_in_template_space.mif \
-#    -mask dwi_mask_upsampled_in_template_space.mif \
-#    -select 2000000 \
-#    -cutoff 0.06 \
-#    tracks_2_million_template_space.tck
-#tcksift tracks_2_million_template_space.tck \
-#    wmfod_norm_in_template_space.mif \
-#    -term_number 200000 \
-#    tracks_200k_template_space.tck
-
-
-## Use FSL to skullstrip T1 and register into DWI space
-#mrconvert t1.mif t1.nii.gz
-#mrconvert dwi_denoised_unringed_preproc_unbiased_upsampled.mif dwi_preprocessed_upsampled.nii.gz
-#/opt/fsl/bin/bet t1.nii.gz t1_brainonly.nii.gz
-#/opt/fsl/bin/epi_reg --epi=dwi_preprocessed_upsampled.nii.gz \
-#    --t1=t1.nii.gz \
-#    --t1brain=t1_brainonly.nii.gz \
-#    --out=dwi2t1
-#
-#transformconvert dwi2t1.mat \
-#    dwi_preprocessed_upsampled.nii.gz \
-#    t1.nii.gz \
-#    flirt_import dwi2t1_warp.txt
-#
-#mrtransform t1.mif \
-#    -linear dwi2t1_warp.txt \
-#    -inverse \
-#    t1_in_dwi_space.mif
-#mrtransform t1_brainonly.nii.gz \
-#    -linear dwi2t1_warp.txt \
-#    -inverse \
-#    t1_brainonly_in_dwi_space.mif
-#
-#rm t1.nii.gz dwi_preprocessed_upsampled.nii.gz dwi2t1.nii.gz
-
-
-###### Tractseg tract extraction both in subject and template space
-# Left this out for now, don't think tractseg is appropriate in 
-# pathologically altered brains...
-
-# pip install dipy pandas torch TractSeg
-
-## Subject space:
-#wdir=tractseg/subjectspace
-#mkdir -p $wdir
-#
-#sh2peaks wmfod_norm.mif \
-#    $wdir/peaks.nii.gz
-#
-#TractSeg -i $wdir/peaks.nii.gz \
-#         -o $wdir/tractseg_output \
-#         --output_type tract_segmentation
-#TractSeg -i $wdir/peaks.nii.gz \
-#         -o $wdir/tractseg_output/ \
-#         --output_type endings_segmentation
-#TractSeg -i $wdir/peaks.nii.gz \
-#         -o $wdir/tractseg_output/ \
-#         --output_type TOM
-#Tracking -i $wdir/peaks.nii.gz \
-#         -o $wdir/tractseg_output 
-
-## Template space:
-#wdir=tractseg/templatespace
-#mkdir -p $wdir
-#
-#sh2peaks wmfod_norm_in_template_space.mif \
-#         $wdir/peaks.nii.gz
-#
-#TractSeg -i $wdir/peaks.nii.gz \
-#         -o $wdir/tractseg_output \
-#         --output_type tract_segmentation
-#TractSeg -i $wdir/peaks.nii.gz \
-#         -o $wdir/tractseg_output/ \
-#         --output_type endings_segmentation
-#TractSeg -i $wdir/peaks.nii.gz \
-#         -o $wdir/tractseg_output/ \
-#         --output_type TOM
-#Tracking -i $wdir/peaks.nii.gz \
-#         -o $wdir/tractseg_output 

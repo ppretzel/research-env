@@ -12,6 +12,5 @@ if [[ -z "$subject_id" ]]; then
 fi
 
 sudo docker compose run --rm \
-    --user 1000:1000 \
     mrtrix \
     bash /scripts/mrtrix_per_patient_pipeline.zsh "$subject_id"
