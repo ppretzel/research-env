@@ -227,8 +227,17 @@ fi
 # Extract brain from T1, extract bzero shells from DWI
 
 #    mkdir -p $wdir/t1_registration
-#    /opt/fsl/bin/bet \
-#        $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
+#    #/opt/fsl/bin/bet \
+#    #    $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
+#    #    $wdir/t1_registration/T1_bet.nii.gz
+#    # Alternatively, if bet doesnt succeed,
+#    # simply use the DWI mask on the native T1 image:
+#    mrgrid $wdir/preprocessing/dwi_mask_upsampled.mif \
+#        regrid -template $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
+#        - | \
+#    mrcalc $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
+#        - \
+#        -mult \
 #        $wdir/t1_registration/T1_bet.nii.gz
 #    dwiextract -bzero \
 #        $wdir/preprocessing/dwi_denoised_unringed_preproc.mif \
@@ -241,6 +250,8 @@ fi
 #              $wdir/t1_registration/dwi_zero_mean.nii.gz
 
 ## Register T1 into DWI using FSL epi_reg
+#  epi_reg does not work within the mrtrix docker image 
+#  instead, run this step locally
 #    /opt/fsl/bin/epi_reg \
 #        --epi=$wdir/t1_registration/dwi_zero_mean.nii.gz \
 #        --t1=$bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
@@ -262,7 +273,7 @@ fi
 #            -linear $wdir/t1_registration/dwi2t1_warp.txt \
 #            -inverse \
 #            $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz
-#exit
+# Check resulting registraton fit with aparc/aseg as an overlay to gm_norm.mif
 
 
 ###################################################################
@@ -270,7 +281,7 @@ fi
 #mrtransform $wdir/t1_registration/T1_in_dwi_space.mif \
 #            -warp $wdir/subject2template_warp.mif \
 #            $wdir/t1_registration/T1_in_template_space.mif
-#            
+            
 
 ###########################################################################
 #############   ACT
@@ -291,6 +302,7 @@ function addBrainstem {
    5ttgen      freesurfer \
                $subfolder/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz \
                $subfolder/ACT/5tt-DKT.mif \
+               -scratch $wdir/ \
                -lut $freesurferdir/FreeSurferColorLUT.txt 
    # Add the brainstem (region 16, but only the bottom few slices,
    # and add to cortical grey matter in the 5tt file so tracking can begin/end there
@@ -334,6 +346,7 @@ function addBrainstem {
 #
 # Dont remove these function calls to keep the parameters for documentation
 #addBrainstem $wdir 97 70 #sub-101
+addBrainstem $wdir 132 88 #sub-103
 
 exit
 
