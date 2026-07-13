@@ -131,15 +131,16 @@ fi
 #fi
 
 ## Register to all three compartment templates
-#mrregister \
-#    $wdir/wmfod_norm.mif $templatedir/wmfod_multi_template.mif \
-#    $wdir/gm_norm.mif $templatedir/gm_multi_template.mif \
-#    $wdir/csf_norm.mif $templatedir/csf_multi_template.mif \
-#    -mask1 $wdir/preprocessing/dwi_mask_nocerebellum.mif \
-#    -nl_warp $wdir/subject2template_warp.mif $wdir/template2subject_warp.mif \
-#    -transformed $wdir/wmfod_norm_in_template_space.mif \
-#    -transformed $wdir/gm_in_template_space.mif \
-#    -transformed $wdir/csf_in_template_space.mif
+mrregister \
+    $wdir/wmfod_norm.mif $templatedir/wmfod_multi_template.mif \
+    $wdir/gm_norm.mif $templatedir/gm_multi_template.mif \
+    $wdir/csf_norm.mif $templatedir/csf_multi_template.mif \
+    -mask1 $wdir/preprocessing/dwi_mask_nocerebellum.mif \
+    -nl_warp $wdir/subject2template_warp.mif $wdir/template2subject_warp.mif \
+    -transformed $wdir/wmfod_norm_in_template_space.mif \
+    -transformed $wdir/gm_in_template_space.mif \
+    -transformed $wdir/csf_in_template_space.mif
+exit
 
 # Also register using the original DWI mask
 # While this increases accuracy around the brainstem and cerebral peduncles, 
@@ -346,7 +347,7 @@ function addBrainstem {
 #
 # Dont remove these function calls to keep the parameters for documentation
 #addBrainstem $wdir 97 70 #sub-101
-addBrainstem $wdir 132 88 #sub-103
+#addBrainstem $wdir 132 88 #sub-103
 
 exit
 
