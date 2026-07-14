@@ -131,16 +131,16 @@ fi
 #fi
 
 ## Register to all three compartment templates
-mrregister \
-    $wdir/wmfod_norm.mif $templatedir/wmfod_multi_template.mif \
-    $wdir/gm_norm.mif $templatedir/gm_multi_template.mif \
-    $wdir/csf_norm.mif $templatedir/csf_multi_template.mif \
-    -mask1 $wdir/preprocessing/dwi_mask_nocerebellum.mif \
-    -nl_warp $wdir/subject2template_warp.mif $wdir/template2subject_warp.mif \
-    -transformed $wdir/wmfod_norm_in_template_space.mif \
-    -transformed $wdir/gm_in_template_space.mif \
-    -transformed $wdir/csf_in_template_space.mif
-exit
+#mrregister \
+#    $wdir/wmfod_norm.mif $templatedir/wmfod_multi_template.mif \
+#    $wdir/gm_norm.mif $templatedir/gm_multi_template.mif \
+#    $wdir/csf_norm.mif $templatedir/csf_multi_template.mif \
+#    -mask1 $wdir/preprocessing/dwi_mask_nocerebellum.mif \
+#    -nl_warp $wdir/subject2template_warp.mif $wdir/template2subject_warp.mif \
+#    -transformed $wdir/wmfod_norm_in_template_space.mif \
+#    -transformed $wdir/gm_in_template_space.mif \
+#    -transformed $wdir/csf_in_template_space.mif
+#exit
 
 # Also register using the original DWI mask
 # While this increases accuracy around the brainstem and cerebral peduncles, 
@@ -228,18 +228,18 @@ exit
 # Extract brain from T1, extract bzero shells from DWI
 
 #    mkdir -p $wdir/t1_registration
-#    #/opt/fsl/bin/bet \
-#    #    $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
-#    #    $wdir/t1_registration/T1_bet.nii.gz
+#    /opt/fsl/bin/bet \
+#        $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
+#        $wdir/t1_registration/T1_bet.nii.gz
 #    # Alternatively, if bet doesnt succeed,
 #    # simply use the DWI mask on the native T1 image:
-#    mrgrid $wdir/preprocessing/dwi_mask_upsampled.mif \
-#        regrid -template $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
-#        - | \
-#    mrcalc $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
-#        - \
-#        -mult \
-#        $wdir/t1_registration/T1_bet.nii.gz
+#    #mrgrid $wdir/preprocessing/dwi_mask_upsampled.mif \
+#    #    regrid -template $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
+#    #    - | \
+#    #mrcalc $bids_dir/$sub/anat/${sub}_acq-isoSag1mm_T1w.nii.gz \
+#    #    - \
+#    #    -mult \
+#    #    $wdir/t1_registration/T1_bet.nii.gz
 #    dwiextract -bzero \
 #        $wdir/preprocessing/dwi_denoised_unringed_preproc.mif \
 #        $wdir/t1_registration/dwi_zero.mif
@@ -348,6 +348,7 @@ function addBrainstem {
 # Dont remove these function calls to keep the parameters for documentation
 #addBrainstem $wdir 97 70 #sub-101
 #addBrainstem $wdir 132 88 #sub-103
+#addBrainstem $wdir 112 84 #sub-106
 
 exit
 
