@@ -84,16 +84,19 @@ fi
 #    $wdir/preprocessing/dwi_denoised_unringed.mif \
 #    $wdir/preprocessing/dwi_denoised_unringed_preproc.mif \
 #    -pe_dir AP \
-#    -rpe_pair -se_epi $wdir/preprocessing/b0s.mif
-#
-# # As of today, bias correction is not necessary
-# #dwibiascorrect ants $wdir/dwi_denoised_unringed_preproc.mif $wdir/dwi_denoised_unringed_preproc_unbiased.mif
-#
-## Upsampling, brain masks, spherical deconvolution, normalization
-#
-#mrgrid $wdir/preprocessing/dwi_denoised_unringed_preproc.mif \
-#    regrid -vox 1.25 \
-#    $wdir/preprocessing/dwi_denoised_unringed_preproc_upsampled.mif
+#    -rpe_pair -se_epi $wdir/preprocessing/b0s.mif \
+#    -scratch $wdir/
+# If this step fails in docker, just run it locally
+
+ # As of today, bias correction is not necessary
+ #dwibiascorrect ants $wdir/dwi_denoised_unringed_preproc.mif $wdir/dwi_denoised_unringed_preproc_unbiased.mif
+
+# Upsampling, brain masks, spherical deconvolution, normalization
+
+mrgrid $wdir/preprocessing/dwi_denoised_unringed_preproc.mif \
+    regrid -vox 1.25 \
+    $wdir/preprocessing/dwi_denoised_unringed_preproc_upsampled.mif
+exit
 #
 ##dwi2mask $wdir/dwi_denoised_unringed_preproc_upsampled.mif \
 ##    $wdir/dwi_mask_upsampled.mif
