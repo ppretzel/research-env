@@ -218,11 +218,11 @@ fi
 #    $individualAnalysisFolder/fdc_smooth_controls_mean.mif -subtract \
 #    $individualAnalysisFolder/fdc_smooth_controls_std.mif -divide \
 #    $individualAnalysisFolder/${sub}_fdc_zscore.mif
+#exit
 
 ## Best to show it on the template background,
 #  then threshold (by the same metric!), i.e. -2 on the right input field,
 #  and then set the color scale from -2 to -6 or something like that
-#exit
 
 
 ###################################################################
@@ -353,6 +353,7 @@ function addBrainstem {
 #addBrainstem $wdir 132 88 #sub-103
 #addBrainstem $wdir 112 84 #sub-106
 #addBrainstem $wdir 112 66 #sub-108
+#addBrainstem $wdir 130 91 #sub-109
 
 
 exit
