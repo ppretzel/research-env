@@ -93,10 +93,10 @@ fi
 
 # Upsampling, brain masks, spherical deconvolution, normalization
 
-mrgrid $wdir/preprocessing/dwi_denoised_unringed_preproc.mif \
-    regrid -vox 1.25 \
-    $wdir/preprocessing/dwi_denoised_unringed_preproc_upsampled.mif
-exit
+#mrgrid $wdir/preprocessing/dwi_denoised_unringed_preproc.mif \
+#    regrid -vox 1.25 \
+#    $wdir/preprocessing/dwi_denoised_unringed_preproc_upsampled.mif
+#exit
 #
 ##dwi2mask $wdir/dwi_denoised_unringed_preproc_upsampled.mif \
 ##    $wdir/dwi_mask_upsampled.mif
