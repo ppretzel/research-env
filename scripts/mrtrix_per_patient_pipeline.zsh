@@ -357,52 +357,74 @@ function addBrainstem {
 #addBrainstem $wdir 95 67 #sub-110
 
 
-exit
+#exit
 
 
 ## Perform ACT
-tckgen \
-    -angle 22.5 -maxlen 250 -minlen 10 -power 1.0 \
-    $wdir/wmfod_norm.mif \
-    -seed_gmwmi $wdir/preprocessing/dwi_mask_upsampled.mif \
-    -act $wdir/ACT/5tt-DKT-brainstem.mif \
-    -mask $wdir/preprocessing/dwi_mask_upsampled.mif \
-    -select 2000000 -cutoff 0.10 \
-    $wdir/ACT/tracks_2m_ACT.tck
-tcksift2 \
-    $wdir/ACT/tracks_2m_ACT.tck \
-    $wdir/wmfod_norm.mif \
-    $wdir/ACT/tracks_2m_tcksift2_weights.txt \
-    -act $wdir/ACT/5tt-DKT-brainstem.mif \
-    -out_mu $wdir/ACT/tracks_2m_tcksift2_mu.txt
-
-exit
+#tckgen \
+#    -angle 22.5 -maxlen 250 -minlen 10 -power 1.0 \
+#    $wdir/wmfod_norm.mif \
+#    -seed_gmwmi $wdir/preprocessing/dwi_mask_upsampled.mif \
+#    -act $wdir/ACT/5tt-DKT-brainstem.mif \
+#    -mask $wdir/preprocessing/dwi_mask_upsampled.mif \
+#    -select 2000000 -cutoff 0.10 \
+#    $wdir/ACT/tracks_2m_ACT.tck
+#tcksift2 \
+#    $wdir/ACT/tracks_2m_ACT.tck \
+#    $wdir/wmfod_norm.mif \
+#    $wdir/ACT/tracks_2m_tcksift2_weights.txt \
+#    -act $wdir/ACT/5tt-DKT-brainstem.mif \
+#    -out_mu $wdir/ACT/tracks_2m_tcksift2_mu.txt
+#
+#exit
 
 # Connectome 
-labelconvert \
-    $wdir/ACT/aparc.DKTatlas+brainstem.mif \
-    $freesurferdir/FreeSurferColorLUT.txt \
-    $mrtrixdir/fs_default_adapted.txt \
-    $wdir/ACT/nodes.mif
+#labelconvert \
+#    $wdir/ACT/aparc.DKTatlas+brainstem.mif \
+#    $freesurferdir/FreeSurferColorLUT.txt \
+#    $mrtrixdir/fs_default_adapted.txt \
+#    $wdir/ACT/nodes.mif
+#exit
 # IMPORTANT! If this step fails, check that in FreeSurferColorLUT the asterisks have been removed from Thalamus_proper!!
 
-tck2connectome \
-    $wdir/ACT/tracks_2m_ACT.tck \
-    -tck_weights_in $wdir/ACT/tracks_2m_tcksift2_weights.txt \
-    $wdir/ACT/nodes.mif \
-    $wdir/ACT/connectome.csv \
-    -out_assignments $wdir/ACT/streamline_assignments
-
-mkdir -p $wdir/ACT/streamlines/raw
-connectome2tck \
-    $wdir/ACT/tracks_2m_ACT.tck \
-    $wdir/ACT/streamline_assignments \
-    $wdir/ACT/streamlines/raw/edge- \
-    -tck_weights_in $wdir/ACT/tracks_2m_tcksift2_weights.txt \
-    -prefix_tck_weights_out $wdir/ACT/streamlines/raw/weights- 
+#tck2connectome \
+#    $wdir/ACT/tracks_2m_ACT.tck \
+#    -tck_weights_in $wdir/ACT/tracks_2m_tcksift2_weights.txt \
+#    $wdir/ACT/nodes.mif \
+#    $wdir/ACT/connectome.csv \
+#    -out_assignments $wdir/ACT/streamline_assignments
+#exit
+#
+#mkdir -p $wdir/ACT/streamlines/raw
+#connectome2tck \
+#    $wdir/ACT/tracks_2m_ACT.tck \
+#    $wdir/ACT/streamline_assignments \
+#    $wdir/ACT/streamlines/raw/edge- \
+#    -tck_weights_in $wdir/ACT/tracks_2m_tcksift2_weights.txt \
+#    -prefix_tck_weights_out $wdir/ACT/streamlines/raw/weights- 
 
 ############## Extract the relevant tracks
 #  TODO might think about streamlining this later; the entirety of all tracks takes several GB
+
+function extractStreamlines {
+
+    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+        echo "extractStreamlines: invalid arguments" >&2
+        echo "Usage: extractStreamlines <node1> <node2> <output_filename>" >&2
+        return 1
+    fi
+
+    mkdir -p $wdir/ACT/streamlines
+
+    connectome2tck \
+        $wdir/ACT/tracks_2m_ACT.tck \
+        $wdir/ACT/streamline_assignments \
+        $wdir/ACT/streamlines/$3 \
+        -nodes $1,$2 \
+        -exclusive -files single
+        
+}
+
 brainstem_l=87
 brainstem_r=86
 cerebellum_l=35
@@ -413,6 +435,20 @@ precentral_l=23
 precentral_r=72
 postcentral_l=21
 postcentral_r=70
+
+extractStreamlines $cerebellum_r $thalamus_l SCP_R.tck
+extractStreamlines $cerebellum_l $thalamus_r SCP_L.tck
+extractStreamlines $brainstem_l $precentral_l CST_L.tck
+extractStreamlines $brainstem_r $precentral_r CST_R.tck
+extractStreamlines $thalamus_r $precentral_r thalamus-precentral_R.tck
+extractStreamlines $thalamus_l $precentral_l thalamus-precentral_L.tck
+extractStreamlines $thalamus_r $postcentral_r thalamus-postcentral_R.tck
+extractStreamlines $thalamus_l $postcentral_l thalamus-postcentral_L.tck
+
+
+
+exit
+
 
 linkTract () {
 
