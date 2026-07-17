@@ -290,6 +290,30 @@ wdir=/research/structuralConnectivity/mrtrix_derived_subject_data/$sub
 ###########################################################################
 #############   ACT
 
+# For the patients, fix the completely messed up cerebellar registration
+function setZero {
+    # set value given as $1 to zero within the warped aparc.DKTatlas
+    mrcalc $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
+        $1 -eq - | \
+    mrcalc - 0 $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif -if \
+        $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif --force
+}
+
+mkdir -p $wdir/act-test
+mrconvert $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz \
+    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif
+setZero 7 # left cerebellum WM
+setZero 8 # left cerebellum cortex
+setZero 46 # right cerebellum WM
+setZero 47 # right cerebellum cortex
+
+# TODO Dann selbst gezeichnete cerebellum-masken drueberlegen 
+# (evtl in eine Funktion zusammenfassen),
+# neu traktografie, neu ganze Pipeline laufen lassen
+
+exit
+
+
 mkdir -p $wdir/ACT
 echo "Performing ACT"
 
