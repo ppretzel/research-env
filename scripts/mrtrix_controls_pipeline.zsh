@@ -424,44 +424,8 @@ for folder in $subsdir/sub-0*; do
 
 done
 
-
-## Extract the relevant tracks
-#  TODO might think about streamlining this later; the entirety of all tracks takes several GB
-brainstem_l=87
-brainstem_r=86
-cerebellum_l=35
-cerebellum_r=84
-thalamus_l=36
-thalamus_r=43
-precentral_l=23
-precentral_r=72
-postcentral_l=21
-postcentral_r=70
-
-linkTract () {
-
-    start=$1
-    end=$2
-    tractname=$3
-
-    for folder in $subsdir/sub-0*; do
-
-        ln $folder/ACT/streamlines/raw/edge-${start}-${end}.tck $folder/ACT/streamlines/$tractname.tck -rs
-        ln $folder/ACT/streamlines/raw/weights-${start}-${end}.csv $folder/ACT/streamlines/$tractname-weights.csv -rs
-
-    done
-
-}
-
-#linkTract $brainstem_l $precentral_l CST_L 
-#linkTract $brainstem_r $precentral_r CST_R
-#linkTract $brainstem_l $cerebellum_l inferior_cerebellar_l
-#linkTract $brainstem_r $cerebellum_r inferior_cerebellar_r
-#linkTract $thalamus_l $cerebellum_r thalamus_l_cerebellum_r
-#linkTract $thalamus_r $cerebellum_l thalamus_r_cerebellum_l
-#linkTract $thalamus_r $precentral_r thalamus_r_radiation
-#linkTract $thalamus_l $precentral_l thalamus_l_radiation
-#linkTract $cerebellum_l $cerebellum_r pons sub-001
+## Extraction of individual streamlines was performed using the 
+#  patient pipeline with the extractStreamlines() function
 
 
 ##############################################################

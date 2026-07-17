@@ -29,15 +29,15 @@ wdir=/research/structuralConnectivity/mrtrix_derived_subject_data/$sub
 
 # Create target folder and check whether it's empty, 
 # ask to overwrite if not empty
-mkdir -p $wdir
-if [ -n "$(ls -A "$wdir" 2>/dev/null)" ]; then
-  echo "The folder is not empty. Do you want to continue? (y/N)"
-  read -r response
-  if [[ ! "$response" =~ ^[Yy]$ ]]; then
-    echo "Exiting script."
-    exit 1
-  fi
-fi
+#mkdir -p $wdir
+#if [ -n "$(ls -A "$wdir" 2>/dev/null)" ]; then
+#  echo "The folder is not empty. Do you want to continue? (y/N)"
+#  read -r response
+#  if [[ ! "$response" =~ ^[Yy]$ ]]; then
+#    echo "Exiting script."
+#    exit 1
+#  fi
+#fi
 
 ############ Preprocessing #########################################
 
@@ -404,9 +404,10 @@ function addBrainstem {
 #    -prefix_tck_weights_out $wdir/ACT/streamlines/raw/weights- 
 
 ############## Extract the relevant tracks
-#  TODO might think about streamlining this later; the entirety of all tracks takes several GB
-
 function extractStreamlines {
+    # Simply extracts the streamlines connecting node 1 and 2 
+    # (arguments $1 and $2) and places them in ACT/streamlines/
+    # under the name given as $3
 
     if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
         echo "extractStreamlines: invalid arguments" >&2
@@ -421,10 +422,13 @@ function extractStreamlines {
         $wdir/ACT/streamline_assignments \
         $wdir/ACT/streamlines/$3 \
         -nodes $1,$2 \
-        -exclusive -files single
+        -exclusive -files single \
+        -tck_weights_in $wdir/ACT/tracks_2m_tcksift2_weights.txt \
+        -prefix_tck_weights_out $wdir/ACT/streamlines/$(basename $3 .tck)_weights
         
 }
 
+# Define nodes of interest for better readability of the tract definition
 brainstem_l=87
 brainstem_r=86
 cerebellum_l=35
@@ -436,40 +440,70 @@ precentral_r=72
 postcentral_l=21
 postcentral_r=70
 
-extractStreamlines $cerebellum_r $thalamus_l SCP_R.tck
-extractStreamlines $cerebellum_l $thalamus_r SCP_L.tck
-extractStreamlines $brainstem_l $precentral_l CST_L.tck
-extractStreamlines $brainstem_r $precentral_r CST_R.tck
-extractStreamlines $thalamus_r $precentral_r thalamus-precentral_R.tck
-extractStreamlines $thalamus_l $precentral_l thalamus-precentral_L.tck
-extractStreamlines $thalamus_r $postcentral_r thalamus-postcentral_R.tck
-extractStreamlines $thalamus_l $postcentral_l thalamus-postcentral_L.tck
+#extractStreamlines $cerebellum_r $thalamus_l SCP_R.tck
+#extractStreamlines $cerebellum_l $thalamus_r SCP_L.tck
+#extractStreamlines $brainstem_l $precentral_l CST_L.tck
+#extractStreamlines $brainstem_r $precentral_r CST_R.tck
+#extractStreamlines $thalamus_r $precentral_r thalamus-precentral_R.tck
+#extractStreamlines $thalamus_l $precentral_l thalamus-precentral_L.tck
+#extractStreamlines $thalamus_r $postcentral_r thalamus-postcentral_R.tck
+#extractStreamlines $thalamus_l $postcentral_l thalamus-postcentral_L.tck
+#extractStreamlines $cerebellum_l $cerebellum_r pons.tck
+#extractStreamlines $cerebellum_l $brainstem_l ICP_L.tck
+#extractStreamlines $cerebellum_r $brainstem_r ICP_R.tck
 
+#exit
 
+# Compute the FD in subject space, because the standard FBA pipeline
+# only computes it in template space
+#fod2fixel $wdir/wmfod_norm.mif \
+#    -mask $wdir/preprocessing/dwi_mask_upsampled.mif \
+#    $wdir/ACT/fixel_in_subject_space \
+#    -afd fd.mif
+#exit
 
-exit
+## Extract the mean FD for each tract 
+outfile=$wdir/ACT/mean_streamline_FD.csv
+if [ -e $outfile ]; then
+    echo "Outfile $outfile already exists."
+    echo "New data will be added to the existing file."
+    echo "Do you want to continue? (y/N)"
+    read -r response
+    if [[ ! "$response" =~ ^[Yy]$ ]]; then
+      echo "Exiting script."
+      exit 1
+    fi
+fi
 
+touch $outfile
+echo "subject,tractname,metric,mean" >> $outfile
 
-linkTract () {
+for tckfile in $wdir/ACT/streamlines/*.tck; do
 
-    start=$1
-    end=$2
-    tractname=$3
+    tractname=$(basename $tckfile .tck)
+    echo "Processing" $tractname
+    
+    tck2fixel --force \
+        $tckfile \
+        $wdir/ACT/fixel_in_subject_space/ \
+        $wdir/ACT/streamlines/fixelmasks/ \
+        $tractname.mif
+    fd_mean=$(mrstats $wdir/ACT/fixel_in_subject_space/fd.mif \
+                      -mask $wdir/ACT/streamlines/fixelmasks/$tractname.mif \
+                      -output mean)
+    echo $sub,$tractname,fd,$fd_mean >> $outfile
+    #fc_mean=$(mrstats $templatefolder/log_fc_smooth/$subjectname.mif \
+    #                  -mask $tractfolder/fixelmasks/$tractname.mif \
+    #                  -output mean)
+    #echo $subjectname,$tractname,fc,$fc_mean >> $outfile
+    #fdc_mean=$(mrstats $templatefolder/fdc_smooth/$subjectname.mif \
+    #                  -mask $tractfolder/fixelmasks/$tractname.mif \
+    #                  -output mean)
+    #echo $subjectname,$tractname,fdc,$fdc_mean >> $outfile
 
-    ln $wdir/ACT/streamlines/raw/edge-${start}-${end}.tck $wdir/ACT/streamlines/$tractname.tck -rs
-    ln $wdir/ACT/streamlines/raw/weights-${start}-${end}.csv $wdir/ACT/streamlines/$tractname-weights.csv -rs
+done
 
-}
-
-linkTract $brainstem_l $precentral_l CST_L 
-linkTract $brainstem_r $precentral_r CST_R
-linkTract $brainstem_l $cerebellum_l inferior_cerebellar_l
-linkTract $brainstem_r $cerebellum_r inferior_cerebellar_r
-linkTract $thalamus_l $cerebellum_r thalamus_l_cerebellum_r
-linkTract $thalamus_r $cerebellum_l thalamus_r_cerebellum_l
-linkTract $thalamus_r $precentral_r thalamus_r_radiation
-linkTract $thalamus_l $precentral_l thalamus_l_radiation
-linkTract $cerebellum_l $cerebellum_r pons sub-001
+echo "Finished. Mean metrics written to" $outfile
 
 
 exit
