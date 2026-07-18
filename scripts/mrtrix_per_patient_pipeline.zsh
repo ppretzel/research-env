@@ -300,8 +300,8 @@ function setZero {
 }
 
 mkdir -p $wdir/act-test
-mrconvert $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz \
-    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif
+#mrconvert $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz \
+#    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif
 #mrcalc $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif 7 -eq \
 #    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif 8 -eq \
 #    -or \
@@ -315,26 +315,26 @@ mrconvert $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz \
 #
 #exit
 
-setZero 7 # left cerebellum WM
-setZero 8 # left cerebellum cortex
-setZero 46 # right cerebellum WM
-setZero 47 # right cerebellum cortex
+#setZero 7 # left cerebellum WM
+#setZero 8 # left cerebellum cortex
+#setZero 46 # right cerebellum WM
+#setZero 47 # right cerebellum cortex
 #
-mrgrid $wdir/act-test/cerebellum-cortex_L.mif \
-    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
-    $wdir/act-test/cerebellum_L_regridded.mif
-mrgrid $wdir/act-test/cerebellum-cortex_R.mif \
-    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
-    $wdir/act-test/cerebellum_R_regridded.mif
-
-mrcalc $wdir/act-test/cerebellum_L_regridded.mif 8 \
-    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
-    -if \
-    - | \
-mrcalc $wdir/act-test/cerebellum_R_regridded.mif 47 \
-    - \
-    -if \
-    $wdir/act-test/tmp-test.mif
+#mrgrid $wdir/act-test/cerebellum-cortex_L.mif \
+#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
+#    $wdir/act-test/cerebellum_L_regridded.mif
+#mrgrid $wdir/act-test/cerebellum-cortex_R.mif \
+#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
+#    $wdir/act-test/cerebellum_R_regridded.mif
+#
+#mrcalc $wdir/act-test/cerebellum_L_regridded.mif 8 \
+#    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
+#    -if \
+#    - | \
+#mrcalc $wdir/act-test/cerebellum_R_regridded.mif 47 \
+#    - \
+#    -if \
+#    $wdir/act-test/tmp-test.mif
 
 ## TODO Dann selbst gezeichnete cerebellum-masken drueberlegen 
 ## (evtl in eine Funktion zusammenfassen),
@@ -400,7 +400,7 @@ function addBrainstem {
 # so that streamlines are separated between cerebellar peduncles and brainstem
 #
 # Dont remove these function calls to keep the parameters for documentation
-addBrainstem $wdir 97 70 #sub-101
+#addBrainstem $wdir 97 70 #sub-101
 #addBrainstem $wdir 132 88 #sub-103
 #addBrainstem $wdir 112 84 #sub-106
 #addBrainstem $wdir 112 66 #sub-108
@@ -408,26 +408,24 @@ addBrainstem $wdir 97 70 #sub-101
 #addBrainstem $wdir 95 67 #sub-110
 
 
-exit
-
 
 ## Perform ACT
-#tckgen \
-#    -angle 22.5 -maxlen 250 -minlen 10 -power 1.0 \
-#    $wdir/wmfod_norm.mif \
-#    -seed_gmwmi $wdir/preprocessing/dwi_mask_upsampled.mif \
-#    -act $wdir/act-test/5tt-DKT-brainstem.mif \
-#    -mask $wdir/preprocessing/dwi_mask_upsampled.mif \
-#    -select 2000000 -cutoff 0.10 \
-#    $wdir/act-test/tracks_2m_ACT.tck
-#tcksift2 \
-#    $wdir/act-test/tracks_2m_ACT.tck \
-#    $wdir/wmfod_norm.mif \
-#    $wdir/act-test/tracks_2m_tcksift2_weights.txt \
-#    -act $wdir/act-test/5tt-DKT-brainstem.mif \
-#    -out_mu $wdir/act-test/tracks_2m_tcksift2_mu.txt
-#
-#exit
+tckgen \
+    -angle 22.5 -maxlen 250 -minlen 10 -power 1.0 \
+    $wdir/wmfod_norm.mif \
+    -seed_gmwmi $wdir/preprocessing/dwi_mask_upsampled.mif \
+    -act $wdir/act-test/5tt-DKT-brainstem.mif \
+    -mask $wdir/preprocessing/dwi_mask_upsampled.mif \
+    -select 2000000 -cutoff 0.10 \
+    $wdir/act-test/tracks_2m_ACT.tck
+tcksift2 \
+    $wdir/act-test/tracks_2m_ACT.tck \
+    $wdir/wmfod_norm.mif \
+    $wdir/act-test/tracks_2m_tcksift2_weights.txt \
+    -act $wdir/act-test/5tt-DKT-brainstem.mif \
+    -out_mu $wdir/act-test/tracks_2m_tcksift2_mu.txt
+
+exit
 
 # Connectome 
 #labelconvert \
