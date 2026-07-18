@@ -300,8 +300,8 @@ function setZero {
 }
 
 mkdir -p $wdir/act-test
-#mrconvert $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz \
-#    #$wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif
+mrconvert $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz \
+    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif
 #mrcalc $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif 7 -eq \
 #    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif 8 -eq \
 #    -or \
@@ -315,33 +315,33 @@ mkdir -p $wdir/act-test
 #
 #exit
 
-#setZero 7 # left cerebellum WM
-#setZero 8 # left cerebellum cortex
-#setZero 46 # right cerebellum WM
-#setZero 47 # right cerebellum cortex
+setZero 7 # left cerebellum WM
+setZero 8 # left cerebellum cortex
+setZero 46 # right cerebellum WM
+setZero 47 # right cerebellum cortex
 #
-#mrgrid $wdir/act-test/cerebellum-cortex_L.mif \
-#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
-#    $wdir/act-test/cerebellum_L_regridded.mif
-#mrgrid $wdir/act-test/cerebellum-cortex_R.mif \
-#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
-#    $wdir/act-test/cerebellum_R_regridded.mif
-#
-#mrcalc $wdir/act-test/cerebellum_L_regridded.mif 8 \
-#    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
-#    -if \
-#    - | \
-#mrcalc $wdir/act-test/cerebellum_R_regridded.mif 47 \
-#    - \
-#    -if \
-#    $wdir/act-test/tmp-test.mif
+mrgrid $wdir/act-test/cerebellum-cortex_L.mif \
+    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
+    $wdir/act-test/cerebellum_L_regridded.mif
+mrgrid $wdir/act-test/cerebellum-cortex_R.mif \
+    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
+    $wdir/act-test/cerebellum_R_regridded.mif
+
+mrcalc $wdir/act-test/cerebellum_L_regridded.mif 8 \
+    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
+    -if \
+    - | \
+mrcalc $wdir/act-test/cerebellum_R_regridded.mif 47 \
+    - \
+    -if \
+    $wdir/act-test/tmp-test.mif
 
 ## TODO Dann selbst gezeichnete cerebellum-masken drueberlegen 
 ## (evtl in eine Funktion zusammenfassen),
 ## neu traktografie, neu ganze Pipeline laufen lassen
 #
 
-mkdir -p $wdir/ACT-test-test
+mkdir -p $wdir/act-test
 echo "Performing ACT"
 
 function addBrainstem {
@@ -350,21 +350,21 @@ function addBrainstem {
     height=$2
     midline=$3
 
-    mkdir -p $subfolder/ACT-test
+    mkdir -p $subfolder/act-test
 
    # Prepare 5TT file with the brainstem as additional region
    # so that ACT can let tracks end there
    5ttgen      freesurfer \
-               $subfolder/act-test/tmp-test.mif
-               $subfolder/ACT-test/5tt-DKT.mif \
+               $subfolder/act-test/tmp-test.mif \
+               $subfolder/act-test/5tt-DKT.mif \
                -scratch $wdir/ \
                -lut $freesurferdir/FreeSurferColorLUT.txt 
    # Add the brainstem (region 16, but only the bottom few slices,
    # and add to cortical grey matter in the 5tt file so tracking can begin/end there
    mrcalc $subfolder/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz 16 -eq - | \
        mrgrid - crop -axis 2 0:$height  - | \
-       mrgrid - regrid -template $subfolder/ACT-test/5tt-DKT.mif - | \
-       5ttedit $subfolder/ACT-test/5tt-DKT.mif -cgm - $subfolder/ACT-test/5tt-DKT-brainstem.mif
+       mrgrid - regrid -template $subfolder/act-test/5tt-DKT.mif - | \
+       5ttedit $subfolder/act-test/5tt-DKT.mif -cgm - $subfolder/act-test/5tt-DKT-brainstem.mif
 
    # Edit the original freesurfer DKT parcellation to add separate brainstem LH and RH regions
    # so that later tracts can be separated correctly
@@ -377,20 +377,20 @@ function addBrainstem {
    mrcalc $subfolder/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz 16 -eq - | \
        mrgrid - crop -axis 2 0:$height - | \
        mrgrid - pad -as $subfolder/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz -all_axes \
-              $subfolder/ACT-test/brainstem_total.mif
-   mrgrid $subfolder/ACT-test/brainstem_total.mif crop -axis 0 0:$midline - | \
-       mrgrid - pad -as $subfolder/ACT-test/brainstem_total.mif -all_axes $subfolder/ACT-test/brainstem_mask_lh.mif 
-   mrcalc $subfolder/ACT-test/brainstem_total.mif $subfolder/ACT-test/brainstem_mask_lh.mif -sub $subfolder/ACT-test/brainstem_mask_rh.mif
+              $subfolder/act-test/brainstem_total.mif
+   mrgrid $subfolder/act-test/brainstem_total.mif crop -axis 0 0:$midline - | \
+       mrgrid - pad -as $subfolder/act-test/brainstem_total.mif -all_axes $subfolder/act-test/brainstem_mask_lh.mif 
+   mrcalc $subfolder/act-test/brainstem_total.mif $subfolder/act-test/brainstem_mask_lh.mif -sub $subfolder/act-test/brainstem_mask_rh.mif
    
    # Set the LH and RH brainstem regions to 15000 and 15001 
    # the numbers have to match the manually added entries in the LUT file
-   mrcalc $subfolder/ACT-test/brainstem_mask_rh.mif \
+   mrcalc $subfolder/act-test/brainstem_mask_rh.mif \
           15000 $subfolder/act-test/tmp-test.mif \
           -if - | \
-   mrcalc $subfolder/ACT-test/brainstem_mask_lh.mif \
+   mrcalc $subfolder/act-test/brainstem_mask_lh.mif \
           15001 - \
           -if \
-          $subfolder/ACT-test/aparc.DKTatlas+brainstem.mif
+          $subfolder/act-test/aparc.DKTatlas+brainstem.mif
 
 }
 
@@ -416,43 +416,43 @@ exit
 #    -angle 22.5 -maxlen 250 -minlen 10 -power 1.0 \
 #    $wdir/wmfod_norm.mif \
 #    -seed_gmwmi $wdir/preprocessing/dwi_mask_upsampled.mif \
-#    -act $wdir/ACT-test-test/5tt-DKT-brainstem.mif \
+#    -act $wdir/act-test/5tt-DKT-brainstem.mif \
 #    -mask $wdir/preprocessing/dwi_mask_upsampled.mif \
 #    -select 2000000 -cutoff 0.10 \
-#    $wdir/ACT-test-test/tracks_2m_ACT.tck
+#    $wdir/act-test/tracks_2m_ACT.tck
 #tcksift2 \
-#    $wdir/ACT-test-test/tracks_2m_ACT.tck \
+#    $wdir/act-test/tracks_2m_ACT.tck \
 #    $wdir/wmfod_norm.mif \
-#    $wdir/ACT-test-test/tracks_2m_tcksift2_weights.txt \
-#    -act $wdir/ACT-test-test/5tt-DKT-brainstem.mif \
-#    -out_mu $wdir/ACT-test-test/tracks_2m_tcksift2_mu.txt
+#    $wdir/act-test/tracks_2m_tcksift2_weights.txt \
+#    -act $wdir/act-test/5tt-DKT-brainstem.mif \
+#    -out_mu $wdir/act-test/tracks_2m_tcksift2_mu.txt
 #
 #exit
 
 # Connectome 
 #labelconvert \
-#    $wdir/ACT-test-test/aparc.DKTatlas+brainstem.mif \
+#    $wdir/act-test/aparc.DKTatlas+brainstem.mif \
 #    $freesurferdir/FreeSurferColorLUT.txt \
 #    $mrtrixdir/fs_default_adapted.txt \
-#    $wdir/ACT-test-test/nodes.mif
+#    $wdir/act-test/nodes.mif
 #exit
 # IMPORTANT! If this step fails, check that in FreeSurferColorLUT the asterisks have been removed from Thalamus_proper!!
 
 #tck2connectome \
-#    $wdir/ACT-test-test/tracks_2m_ACT.tck \
-#    -tck_weights_in $wdir/ACT-test-test/tracks_2m_tcksift2_weights.txt \
-#    $wdir/ACT-test-test/nodes.mif \
-#    $wdir/ACT-test-test/connectome.csv \
-#    -out_assignments $wdir/ACT-test-test/streamline_assignments
+#    $wdir/act-test/tracks_2m_ACT.tck \
+#    -tck_weights_in $wdir/act-test/tracks_2m_tcksift2_weights.txt \
+#    $wdir/act-test/nodes.mif \
+#    $wdir/act-test/connectome.csv \
+#    -out_assignments $wdir/act-test/streamline_assignments
 #exit
 #
-#mkdir -p $wdir/ACT-test-test/streamlines/raw
+#mkdir -p $wdir/act-test/streamlines/raw
 #connectome2tck \
-#    $wdir/ACT-test-test/tracks_2m_ACT.tck \
-#    $wdir/ACT-test-test/streamline_assignments \
-#    $wdir/ACT-test-test/streamlines/raw/edge- \
-#    -tck_weights_in $wdir/ACT-test-test/tracks_2m_tcksift2_weights.txt \
-#    -prefix_tck_weights_out $wdir/ACT-test-test/streamlines/raw/weights- 
+#    $wdir/act-test/tracks_2m_ACT.tck \
+#    $wdir/act-test/streamline_assignments \
+#    $wdir/act-test/streamlines/raw/edge- \
+#    -tck_weights_in $wdir/act-test/tracks_2m_tcksift2_weights.txt \
+#    -prefix_tck_weights_out $wdir/act-test/streamlines/raw/weights- 
 
 ############## Extract the relevant tracks
 function extractStreamlines {
@@ -466,16 +466,16 @@ function extractStreamlines {
         return 1
     fi
 
-    mkdir -p $wdir/ACT-test-test/streamlines
+    mkdir -p $wdir/act-test/streamlines
 
     connectome2tck \
-        $wdir/ACT-test-test/tracks_2m_ACT.tck \
-        $wdir/ACT-test-test/streamline_assignments \
-        $wdir/ACT-test-test/streamlines/$3 \
+        $wdir/act-test/tracks_2m_ACT.tck \
+        $wdir/act-test/streamline_assignments \
+        $wdir/act-test/streamlines/$3 \
         -nodes $1,$2 \
         -exclusive -files single \
-        -tck_weights_in $wdir/ACT-test-test/tracks_2m_tcksift2_weights.txt \
-        -prefix_tck_weights_out $wdir/ACT-test-test/streamlines/$(basename $3 .tck)_weights
+        -tck_weights_in $wdir/act-test/tracks_2m_tcksift2_weights.txt \
+        -prefix_tck_weights_out $wdir/act-test/streamlines/$(basename $3 .tck)_weights
         
 }
 
@@ -509,12 +509,12 @@ postcentral_r=70
 # only computes it in template space
 #fod2fixel $wdir/wmfod_norm.mif \
 #    -mask $wdir/preprocessing/dwi_mask_upsampled.mif \
-#    $wdir/ACT-test-test/fixel_in_subject_space \
+#    $wdir/act-test/fixel_in_subject_space \
 #    -afd fd.mif
 #exit
 
 ## Extract the mean FD for each tract 
-outfile=$wdir/ACT-test-test/mean_streamline_FD.csv
+outfile=$wdir/act-test/mean_streamline_FD.csv
 if [ -e $outfile ]; then
     echo "Outfile $outfile already exists."
     echo "New data will be added to the existing file."
@@ -529,18 +529,18 @@ fi
 touch $outfile
 echo "subject,tractname,metric,mean" >> $outfile
 
-for tckfile in $wdir/ACT-test-test/streamlines/*.tck; do
+for tckfile in $wdir/act-test/streamlines/*.tck; do
 
     tractname=$(basename $tckfile .tck)
     echo "Processing" $tractname
     
     tck2fixel --force \
         $tckfile \
-        $wdir/ACT-test-test/fixel_in_subject_space/ \
-        $wdir/ACT-test-test/streamlines/fixelmasks/ \
+        $wdir/act-test/fixel_in_subject_space/ \
+        $wdir/act-test/streamlines/fixelmasks/ \
         $tractname.mif
-    fd_mean=$(mrstats $wdir/ACT-test-test/fixel_in_subject_space/fd.mif \
-                      -mask $wdir/ACT-test-test/streamlines/fixelmasks/$tractname.mif \
+    fd_mean=$(mrstats $wdir/act-test/fixel_in_subject_space/fd.mif \
+                      -mask $wdir/act-test/streamlines/fixelmasks/$tractname.mif \
                       -output mean)
     echo $sub,$tractname,fd,$fd_mean >> $outfile
     #fc_mean=$(mrstats $templatefolder/log_fc_smooth/$subjectname.mif \
