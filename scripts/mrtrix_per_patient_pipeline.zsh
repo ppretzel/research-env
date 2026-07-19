@@ -290,72 +290,97 @@ wdir=/research/structuralConnectivity/mrtrix_derived_subject_data/$sub
 ###########################################################################
 #############   ACT
 
-# For the patients, fix the completely messed up cerebellar registration
-function setZero {
-    # set value given as $1 to zero within the warped aparc.DKTatlas
-    mrcalc $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
-        $1 -eq - | \
-    mrcalc - 0 $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif -if \
-        $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif --force
-}
+# For the patients, the cerebellar segmentation is completely messed up
+# in the freesurfer output.
+# We have to fix it with manual masks for the cerebellar cortex and WM.
 
+# Directory and DKT atlas segmentation values for cerebellum WM and cortex
 mkdir -p $wdir/act-test
+cerebellum_WM_L=7 # left cerebellum WM
+cerebellum_cortex_L=8 # left cerebellum cortex
+cerebellum_WM_R=46 # right cerebellum WM
+cerebellum_cortex_R=47 # right cerebellum cortex
+
+# Convert the freesurfer segmentation output in .mif format
 #mrconvert $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz \
-#    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif
-#mrcalc $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif 7 -eq \
-#    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif 8 -eq \
+#    $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif
+
+# For visualisation, convert the freesurfer cerebellar output to .mif ROIs
+#mrcalc $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif 7 -eq \
+#    $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif 8 -eq \
 #    -or \
 #    $wdir/act-test/cerebellum-left.mif
 #mrconvert $wdir/t1_registration/aparc.DKTatlas+aseg_in_dwi_space.mgz \
-#    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif
-#mrcalc $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif 46 -eq \
-#    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif 47 -eq \
+#    $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif
+#mrcalc $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif 46 -eq \
+#    $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif 47 -eq \
 #    -or \
 #    $wdir/act-test/cerebellum-right.mif
-#
 #exit
 
-#setZero 7 # left cerebellum WM
-#setZero 8 # left cerebellum cortex
-#setZero 46 # right cerebellum WM
-#setZero 47 # right cerebellum cortex
-#
-#mrgrid $wdir/act-test/cerebellum-cortex_L.mif \
-#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
-#    $wdir/act-test/cerebellum_L_regridded.mif
-#mrgrid $wdir/act-test/cerebellum-cortex_R.mif \
-#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
-#    $wdir/act-test/cerebellum_R_regridded.mif
-#
-#mrcalc $wdir/act-test/cerebellum_L_regridded.mif 8 \
-#    $wdir/act-test/aparc.DKTatlas_dwi_space_fixed_cerebellum.mif \
+# set value given as $1 to zero within the warped aparc.DKTatlas
+#function setZero {
+#    mrcalc $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif \
+#        $1 -eq - | \
+#    mrcalc - 0 $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif -if \
+#        $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif --force
+#}
+#setZero $cerebellum_WM_L
+#setZero $cerebellum_WM_R
+#setZero $cerebellum_cortex_L
+#setZero $cerebellum_cortex_R
+
+# Regrid the manually defined cerbellum WM and cortex masks into 
+# Freesurfer output space
+#mrgrid $wdir/act-test/cerebellum_cortex_L.mif \
+#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif \
+#    $wdir/act-test/cerebellum_cortex_L_regridded.mif
+#mrgrid $wdir/act-test/cerebellum_cortex_R.mif \
+#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif \
+#    $wdir/act-test/cerebellum_cortex_R_regridded.mif
+#mrgrid $wdir/act-test/cerebellum_WM_R.mif \
+#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif \
+#    $wdir/act-test/cerebellum_WM_R_regridded.mif
+#mrgrid $wdir/act-test/cerebellum_WM_L.mif \
+#    regrid -template $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif \
+#    $wdir/act-test/cerebellum_WM_L_regridded.mif
+
+
+# insert the manually defined masks into the FS segmentation output
+# with the appropriate values
+#mrcalc $wdir/act-test/cerebellum_cortex_L_regridded.mif \
+#    $cerebellum_cortex_L \
+#    $wdir/act-test/aparc.DKTatlas_dwi_space_removed_cerebellum.mif \
 #    -if \
 #    - | \
-#mrcalc $wdir/act-test/cerebellum_R_regridded.mif 47 \
+#mrcalc $wdir/act-test/cerebellum_cortex_R_regridded.mif \
+#    $cerebellum_cortex_R \
 #    - \
 #    -if \
-#    $wdir/act-test/tmp-test.mif
+#    - | \
+#mrcalc $wdir/act-test/cerebellum_WM_L_regridded.mif \
+#    $cerebellum_WM_L \
+#    - \
+#    -if \
+#    - | \
+#mrcalc $wdir/act-test/cerebellum_WM_R_regridded.mif \
+#    $cerebellum_WM_R \
+#    - \
+#    -if \
+#    $wdir/act-test/aparc.DKTatlas_dwi_space_manual_cerebellum.mif
 
-## TODO Dann selbst gezeichnete cerebellum-masken drueberlegen 
-## (evtl in eine Funktion zusammenfassen),
-## neu traktografie, neu ganze Pipeline laufen lassen
-#
-
-mkdir -p $wdir/act-test
-echo "Performing ACT"
-
+# Adds the brainstem at a defined height ($2) and midline ($3)
+# as per the values given below for each subject
 function addBrainstem {
 
     subfolder=$1
     height=$2
     midline=$3
 
-    mkdir -p $subfolder/act-test
-
    # Prepare 5TT file with the brainstem as additional region
    # so that ACT can let tracks end there
    5ttgen      freesurfer \
-               $subfolder/act-test/tmp-test.mif \
+               $subfolder/act-test/aparc.DKTatlas_dwi_space_manual_cerebellum.mif \
                $subfolder/act-test/5tt-DKT.mif \
                -scratch $wdir/ \
                -lut $freesurferdir/FreeSurferColorLUT.txt 
@@ -385,7 +410,7 @@ function addBrainstem {
    # Set the LH and RH brainstem regions to 15000 and 15001 
    # the numbers have to match the manually added entries in the LUT file
    mrcalc $subfolder/act-test/brainstem_mask_rh.mif \
-          15000 $subfolder/act-test/tmp-test.mif \
+          15000 $subfolder/act-test/aparc.DKTatlas_dwi_space_manual_cerebellum.mif \
           -if - | \
    mrcalc $subfolder/act-test/brainstem_mask_lh.mif \
           15001 - \
@@ -400,14 +425,14 @@ function addBrainstem {
 # so that streamlines are separated between cerebellar peduncles and brainstem
 #
 # Dont remove these function calls to keep the parameters for documentation
-#addBrainstem $wdir 97 70 #sub-101
+addBrainstem $wdir 90 70 #sub-101
 #addBrainstem $wdir 132 88 #sub-103
 #addBrainstem $wdir 112 84 #sub-106
 #addBrainstem $wdir 112 66 #sub-108
 #addBrainstem $wdir 130 91 #sub-109
 #addBrainstem $wdir 95 67 #sub-110
 
-
+exit
 
 ## Perform ACT
 tckgen \
